@@ -1,5 +1,8 @@
-groq
-setuptools
 fastapi
 uvicorn
 python-dotenv
+
+langsmith
+langgraph
+langchain-core
+langchain-groq

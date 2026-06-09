@@ -1,52 +1,48 @@
-from groq import Groq
 from dotenv import load_dotenv
-import os
-
-from tokenlens import observe, log_tokens, LatencyTracker
 
 load_dotenv()
 
-client = Groq(
-    api_key=os.getenv("GROQ_API_KEY")
+from langchain_groq import ChatGroq
+
+from tokenlens import (
+    capture_tokens,
+    log_tokens
 )
 
-# Example tool
+llm = ChatGroq(
+    model="llama-3.3-70b-versatile"
+)
+
+# Tool required by PDF
 def calculator(expression: str):
     return str(eval(expression))
 
+
 def run_agent(query: str):
 
-    timer = LatencyTracker()
-    timer.start()
-
-    # Simple tool usage
     if query.startswith("calc:"):
-        result = calculator(query.replace("calc:", "").strip())
+
+        result = calculator(
+            query.replace(
+                "calc:",
+                ""
+            )
+        )
 
         return {
             "response": result,
-            "metrics": {
-                "tool_used": "calculator"
-            }
+            "tool": "calculator"
         }
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {
-                "role": "user",
-                "content": query
-            }
-        ]
+    response = llm.invoke(query)
+
+    tokens = capture_tokens(
+        response
     )
 
-    latency = timer.stop()
-
-    metrics = observe(response, latency)
-
-    log_tokens(metrics)
+    log_tokens(tokens)
 
     return {
-        "response": response.choices[0].message.content,
-        "metrics": metrics
+        "response": response.content,
+        "tokens": tokens
     }

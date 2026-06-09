@@ -1,13 +1,21 @@
-# tokenlens/tracker.py
+def capture_tokens(response):
 
-from .token_counter import get_token_usage
-
-def observe(response, latency):
-    usage = get_token_usage(response)
+    usage = response.response_metadata.get(
+        "token_usage",
+        {}
+    )
 
     return {
-        "prompt_tokens": usage["prompt_tokens"],
-        "completion_tokens": usage["completion_tokens"],
-        "total_tokens": usage["total_tokens"],
-        "latency_seconds": latency
+        "prompt_tokens": usage.get(
+            "prompt_tokens",
+            0
+        ),
+        "completion_tokens": usage.get(
+            "completion_tokens",
+            0
+        ),
+        "total_tokens": usage.get(
+            "total_tokens",
+            0
+        )
     }
