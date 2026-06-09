@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from groq import Groq
 from dotenv import load_dotenv
 import os
+from tokenlens import observe, log_tokens, LatencyTracker
 
-from tokenlens import observe, LatencyTracker
 
 load_dotenv()
 
@@ -38,6 +38,7 @@ def chat(query: str):
     latency = timer.stop()
 
     metrics = observe(response, latency)
+    log_tokens(metrics)
 
     return {
         "response": response.choices[0].message.content,
